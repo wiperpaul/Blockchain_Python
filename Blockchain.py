@@ -2,6 +2,13 @@
 ---- Blockchain with Python, written by Paul Wiper ----
 ---- created following HackerNoon guide written by Daniel van Flymen ----
 """
+
+import hashlib
+import json
+
+from time import time
+from uuid import uuid64
+
 #Blockchain classes constructors create an empty list to store blockchain (BC)
 #and another to store transactions
 class Blockchain(object):
@@ -65,10 +72,25 @@ class Blockchain(object):
             # Must make sure Dictionary is ordered or hashes will be inconsistent
             block_string = json.dumps(block, sort_keys=True).encode()
             return hashlib.sha256(block_string).hexdigest()
-
-            pass
         
         @property
         def last_block(self):
             #returns last block in chain
             pass
+
+        def proof_of_work(self, last_proof):
+            """
+            Proof of work Alg
+            - Find a number x such that hash(px) contains leading 4 zeros e
+            - p being the previous proof and x being the new proof
+
+            :param last_proof: <int>
+            :return: <int>
+             FINISH THIS SECTION
+            """
+            proof = 0
+            while self.valid_proof(last_proof, proof) is False:
+                proof += 1
+
+            return proof
+
