@@ -6,8 +6,11 @@
 import hashlib
 import json
 
+from textwrap import dedent
 from time import time
 from uuid import uuid64
+
+from flash import flask
 
 #Blockchain classes constructors create an empty list to store blockchain (BC)
 #and another to store transactions
@@ -106,3 +109,37 @@ class Blockchain(object):
             guess = f'{last_proof}{proof}'.encode()
             guess_hash = hashlib.sha256(guess).hexdigest()
             return guess_hash[:4] == "0000"
+
+        """
+
+        ----CODE FOR FLASK AND NODE SETUP----
+        
+        """
+
+        # Instantiate Node
+        app = flask(__name__)
+
+        # Generate Unique id for node
+        node_identifier = str(uuid64()).replace('-', '')
+
+        # Instantiate the Blockchain ( STILL CONFUSED ABOUT THIS PART )
+        blockchain = Blockchain()
+
+        @app.route('/mine', methods=['GET'])
+        def mine():
+            return "Mine a new Block"
+
+        @app.route('/transactions/new', methods=['POST'])
+        def new_transaction():
+            return "Add new Transaction"
+
+        @app.route('/chain', methods=['GET'])
+        def full_chain():
+            response = {
+                'chain': blockchain.chain,
+                'length': len(blockchain.chain),
+                }
+            return jsonify(response), 200
+
+        if __name__ == '__main__':
+            app.run(host='0.0.0.0', port=5000)
