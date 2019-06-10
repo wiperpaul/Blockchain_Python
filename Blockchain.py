@@ -81,12 +81,11 @@ class Blockchain(object):
         def proof_of_work(self, last_proof):
             """
             Proof of work Alg
-            - Find a number x such that hash(px) contains leading 4 zeros e
+            - Find a number x such that hash(px) contains leading 4 zeros 
             - p being the previous proof and x being the new proof
 
             :param last_proof: <int>
             :return: <int>
-             FINISH THIS SECTION
             """
             proof = 0
             while self.valid_proof(last_proof, proof) is False:
@@ -94,3 +93,16 @@ class Blockchain(object):
 
             return proof
 
+        @staticmethod
+        def valid_proof(last_proof, proof):
+            """
+            Validates the proof: Does hash(last_proof, proof) contain 4 leading zeros?
+
+            :param last_proof: <int> Previous Proof
+            :param proof: <int> Current Proof
+            :return: <bool> True if correct, False if not.
+            """
+
+            guess = f'{last_proof}{proof}'.encode()
+            guess_hash = hashlib.sha256(guess).hexdigest()
+            return guess_hash[:4] == "0000"
