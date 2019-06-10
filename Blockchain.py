@@ -125,14 +125,18 @@ class Blockchain(object):
         # Instantiate the Blockchain ( STILL CONFUSED ABOUT THIS PART )
         blockchain = Blockchain()
 
+        # Creates /mine endpoint which is a get request
         @app.route('/mine', methods=['GET'])
         def mine():
             return "Mine a new Block"
 
+        # Creates the /transactions/new endpoint which is a POST req
+        # well be sending data to this endpoint
         @app.route('/transactions/new', methods=['POST'])
         def new_transaction():
             return "Add new Transaction"
 
+        # Creates the chain endpoint which returns the full blockchain
         @app.route('/chain', methods=['GET'])
         def full_chain():
             response = {
@@ -141,5 +145,6 @@ class Blockchain(object):
                 }
             return jsonify(response), 200
 
+        # Runs the server on port 5000
         if __name__ == '__main__':
             app.run(host='0.0.0.0', port=5000)
