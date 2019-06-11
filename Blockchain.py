@@ -8,9 +8,9 @@ import json
 
 from textwrap import dedent
 from time import time
-from uuid import uuid64
+from uuid import uuid4
 
-from flash import flask
+from flask import Flask, jsonify, request
 
 #Blockchain classes constructors create an empty list to store blockchain (BC)
 #and another to store transactions
@@ -117,10 +117,10 @@ class Blockchain(object):
         """
 
         # Instantiate Node
-        app = flask(__name__)
+        app = Flask(__name__)
 
         # Generate Unique id for node
-        node_identifier = str(uuid64()).replace('-', '')
+        node_identifier = str(uuid4()).replace('-', '')
 
         # Instantiate the Blockchain ( STILL CONFUSED ABOUT THIS PART )
         blockchain = Blockchain()
@@ -134,7 +134,18 @@ class Blockchain(object):
         # well be sending data to this endpoint
         @app.route('/transactions/new', methods=['POST'])
         def new_transaction():
-            return "Add new Transaction"
+            values = request.get_json()
+
+            # Check required fields are in the POST'ed data
+            required = ['sender', 'recipient', 'amount']
+            if not all(k in values for k in required):
+                return 'Missing values', 400
+
+            # Create a new transaction
+            index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+
+            response = {'message': f'Transaction will be added to block {index}'}
+            return jsonify(response), 201
 
         # Creates the chain endpoint which returns the full blockchain
         @app.route('/chain', methods=['GET'])
@@ -148,3 +159,33 @@ class Blockchain(object):
         # Runs the server on port 5000
         if __name__ == '__main__':
             app.run(host='0.0.0.0', port=5000)
+
+        # Mining Endpoint
+        @app.route('/mine', methods=['GET'])
+        def mine():
+            #run te proof of work alg to get the next proof
+            last_block = blockchain.last_block
+            last_proof = last_block['proof']
+            proof = blockchain.proof_of_work(last_proof)
+
+            # Reward for finding a proof
+            # Sender = "0" signifies that node has mined a new coin
+            blockchain.new_transaction(
+                sender="0",
+                recepient=node_identifier,
+                amount=1,
+            )
+
+            #Forge new block by adding to chain
+            previous_hash = blockchain.hash(last_block)
+            block = blockchain.new_block(proof, previous_hash)
+
+            response = {
+                'message': "New Block Forged",
+                'index': block['index'],
+                'transactions': block['transactions'],
+                'proof': block['proof'],
+                'previous_hash': block['previous_hash'],
+                }
+            return jsonify(response), 200
+
